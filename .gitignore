@@ -4,3 +4,4 @@ __pycache__/
 runs/
 eda_outputs/
 viz_outputs/
+data/

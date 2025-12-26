@@ -6,7 +6,8 @@
 # ├── val/images
 # └── val/labels
 
-path: /data/VisDrone2019-DET
+# This path will be auto-updated by scripts/download_visdrone.py
+path: data/VisDrone2019-DET
 train: train/images
 val: val/images
 test: test/images

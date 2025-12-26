@@ -12,14 +12,18 @@ pip install -r requirements.txt
 
 ## 数据准备
 
-1. 下载 **VisDrone2019-DET** 数据集并解压，假定根目录为 `/data/VisDrone2019-DET`，包含 `train/`, `val/`, `test/` 子目录，每个子目录下有 `images/` 与 `annotations/`。
-2. 将 `configs/visdrone.yaml` 中的 `path` 修改为你的数据集根目录。
-3. 将官方 txt 标注转为 YOLO 标准格式（忽略类别 10/11 的无效区域，类别下标从 0 开始）：
+1. 一键下载（会自动更新 `configs/visdrone.yaml` 的 `path` 指向下载目录）：
+
+```bash
+python scripts/download_visdrone.py --data-root data
+```
+
+2. 将官方 txt 标注转为 YOLO 标准格式（忽略类别 10/11 的无效区域，类别下标从 0 开始）：
 
 ```bash
 python scripts/convert_visdrone_to_yolo.py \
-  --visdrone-root /data/VisDrone2019-DET \
-  --output-root /data/VisDrone2019-DET \
+  --visdrone-root data/VisDrone2019-DET \
+  --output-root data/VisDrone2019-DET \
   --split train val
 ```
 
