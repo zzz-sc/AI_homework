@@ -4,21 +4,25 @@
 
 ## 环境准备
 
+- 建议使用 Python 3.10+，GPU 训练需 CUDA11+（Ultralytics/torch 会依据环境选择 CPU/GPU）。
+- 创建隔离环境并安装依赖：
+
 ```bash
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+# 可选：若存在 GPU，确保正确安装了匹配版本的 torch/torchvision。
 ```
 
 ## 数据准备
 
-1. 一键下载（会自动更新 `configs/visdrone.yaml` 的 `path` 指向下载目录）：
+1. 一键下载（会自动更新 `configs/visdrone.yaml` 的 `path` 指向下载目录，并整理 train/val/test-dev 文件夹）：
 
 ```bash
 python scripts/download_visdrone.py --data-root data
 ```
 
-2. 将官方 txt 标注转为 YOLO 标准格式（忽略类别 10/11 的无效区域，类别下标从 0 开始）：
+2. 将官方 txt 标注转为 YOLO 标准格式（忽略类别 10/11 的无效区域，类别下标从 0 开始）。转换后 `images/` 原样引用，`labels/` 输出为 YOLO txt：
 
 ```bash
 python scripts/convert_visdrone_to_yolo.py \
@@ -27,25 +31,27 @@ python scripts/convert_visdrone_to_yolo.py \
   --split train val
 ```
 
-转换后目录结构示例：
+转换后目录结构示例（运行下载与转换后）：
 
 ```
 VisDrone2019-DET/
 ├── train
 │   ├── images/*.jpg
 │   └── labels/*.txt  # YOLO 标注
-└── val
-    ├── images/*.jpg
-    └── labels/*.txt
+├── val
+│   ├── images/*.jpg
+│   └── labels/*.txt
+└── test-dev
+    └── images/*.jpg   # 无标注，可用于公开评测提交
 ```
 
 ## 数据探索 (EDA)
 
-统计目标尺寸、宽高比、类别分布并输出可视化：
+统计目标尺寸、宽高比、类别分布并输出可视化（可先在 train 标注上运行）：
 
 ```bash
 python scripts/visdrone_eda.py \
-  --labels /data/VisDrone2019-DET/train/annotations \
+  --labels data/VisDrone2019-DET/train/annotations \
   --output eda_outputs/train
 ```
 
@@ -71,19 +77,19 @@ python scripts/train_visdrone.py \
 
 ## 评估与可视化
 
-在验证集上评估、保存预测图、生成 Grad-CAM 热力图：
+在验证集上评估、保存预测图、生成 Grad-CAM 热力图（同时支持推理可视化）：
 
 ```bash
 python scripts/visualize_and_eval.py \
   --weights runs/visdrone/improved_yolov8n/weights/best.pt \
   --data-cfg configs/visdrone.yaml \
-  --sample-dir /data/VisDrone2019-DET/val/images \
-  --gradcam-image /data/VisDrone2019-DET/val/images/0000001_00000_d_0000001.jpg \
+  --sample-dir data/VisDrone2019-DET/val/images \
+  --gradcam-image data/VisDrone2019-DET/val/images/0000001_00000_d_0000001.jpg \
   --output-dir viz_outputs \
   --imgsz 960
 ```
 
-脚本会输出 mAP@0.5 与 mAP@0.5:0.95 指标，并在 `viz_outputs/` 下保存预测可视化与 Grad-CAM 热力图，可用于 Bad Case 分析。
+脚本会输出 mAP@0.5 与 mAP@0.5:0.95 指标，并在 `viz_outputs/` 下保存预测可视化与 Grad-CAM 热力图，可用于 Bad Case 分析。若只需快速推理，可将 `--sample-dir` 指向任意包含 `.jpg` 的文件夹。
 
 ## 消融实验建议
 

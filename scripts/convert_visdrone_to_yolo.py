@@ -43,6 +43,7 @@ def convert_split(split_dir: Path, output_dir: Path) -> None:
     label_dir = split_dir / "annotations"
     output_image_dir = output_dir / "images"
     output_image_dir.parent.mkdir(parents=True, exist_ok=True)
+    # Reuse原图：创建符号链接，避免重复占用磁盘
     if not output_image_dir.exists():
         output_image_dir.symlink_to(image_dir, target_is_directory=True)
     for label_path in tqdm(sorted(label_dir.glob("*.txt")), desc=f"Converting {split_dir.name}"):

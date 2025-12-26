@@ -16,6 +16,7 @@ FILE_LIST = [
 
 
 def download_file(url: str, dest: Path) -> None:
+    """Stream download with progress bar to avoid loading whole file in memory."""
     dest.parent.mkdir(parents=True, exist_ok=True)
     with requests.get(url, stream=True, timeout=30) as r:
         r.raise_for_status()
@@ -28,11 +29,13 @@ def download_file(url: str, dest: Path) -> None:
 
 
 def extract_zip(zip_path: Path, target_dir: Path) -> None:
+    """Extract a zip archive into target_dir."""
     with zipfile.ZipFile(zip_path, "r") as zf:
         zf.extractall(target_dir)
 
 
 def move_split(extracted_dir: Path, target_root: Path, split_name: str) -> None:
+    """Move extracted split folder into unified dataset root."""
     src = extracted_dir / f"VisDrone2019-DET-{split_name}"
     if not src.exists():
         raise FileNotFoundError(f"Expected extracted dir {src} not found")
@@ -43,6 +46,7 @@ def move_split(extracted_dir: Path, target_root: Path, split_name: str) -> None:
 
 
 def update_yaml_path(cfg_path: Path, dataset_root: Path) -> None:
+    """Rewrite the YOLO dataset config path to the freshly downloaded root."""
     with cfg_path.open("r", encoding="utf-8") as f:
         cfg = yaml.safe_load(f)
     cfg["path"] = str(dataset_root.resolve())

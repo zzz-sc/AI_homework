@@ -5,6 +5,7 @@ from ultralytics import YOLO
 
 
 def run_training(data_cfg: Path, model_name: str, epochs: int, img_size: int, batch: int, project: Path, name: str, augment_overrides: dict) -> None:
+    """Launch a single YOLO training run with provided augment overrides."""
     model = YOLO(model_name)
     model.train(
         data=str(data_cfg),
@@ -52,6 +53,7 @@ def main() -> None:
     project = args.project
     project.mkdir(parents=True, exist_ok=True)
 
+    # 基线：温和数据增强 + BCE
     baseline_aug = {
         "mosaic": 0.5,
         "mixup": 0.0,
@@ -59,6 +61,7 @@ def main() -> None:
         "scale": 0.5,
         "fl_gamma": 0.0,  # standard BCE loss
     }
+    # 改进：更强的数据增强 + Focal Loss，针对小目标/前景稀疏
     improved_aug = {
         "mosaic": 0.8,
         "mixup": 0.15,
