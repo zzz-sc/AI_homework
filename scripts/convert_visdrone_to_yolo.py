@@ -8,6 +8,7 @@ VISDRONE_IGNORE_CATEGORIES = {10, 11}  # "others" and "ignoring regions" in offi
 
 
 def convert_annotation(label_path: Path, image_path: Path, output_label_path: Path) -> None:
+    """将单张图片的 VisDrone 标注转为 YOLO txt（归一化坐标，类别从 0 起）。"""
     image = cv2.imread(str(image_path))
     if image is None:
         raise FileNotFoundError(f"Failed to read image: {image_path}")
@@ -26,6 +27,7 @@ def convert_annotation(label_path: Path, image_path: Path, output_label_path: Pa
             if category in VISDRONE_IGNORE_CATEGORIES:
                 continue
             category -= 1  # shift to zero-based for YOLO
+            # 计算归一化坐标（中心点 + 宽高），避免训练时依赖图像分辨率
             x_center = (x0 + w / 2) / width
             y_center = (y0 + h / 2) / height
             w_norm = w / width
@@ -43,7 +45,7 @@ def convert_split(split_dir: Path, output_dir: Path) -> None:
     label_dir = split_dir / "annotations"
     output_image_dir = output_dir / "images"
     output_image_dir.parent.mkdir(parents=True, exist_ok=True)
-    # Reuse原图：创建符号链接，避免重复占用磁盘
+    # 复用原图：创建符号链接，避免重复占用磁盘
     if not output_image_dir.exists():
         output_image_dir.symlink_to(image_dir, target_is_directory=True)
     for label_path in tqdm(sorted(label_dir.glob("*.txt")), desc=f"Converting {split_dir.name}"):

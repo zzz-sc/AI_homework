@@ -5,7 +5,7 @@ from ultralytics import YOLO
 
 
 def run_training(data_cfg: Path, model_name: str, epochs: int, img_size: int, batch: int, project: Path, name: str, augment_overrides: dict) -> None:
-    """Launch a single YOLO training run with provided augment overrides."""
+    """启动一次 YOLO 训练，支持传入不同的数据增强与损失配置做对比实验。"""
     model = YOLO(model_name)
     model.train(
         data=str(data_cfg),

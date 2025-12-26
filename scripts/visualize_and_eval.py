@@ -10,6 +10,7 @@ from ultralytics import YOLO
 
 
 def run_validation(model: YOLO, data_cfg: Path, split: str) -> dict:
+    """在指定 split 上验证模型，返回 mAP/Precision/Recall 等指标。"""
     results = model.val(data=str(data_cfg), split=split, save_json=True, verbose=True)
     metrics = {
         "map50": results.box.map50,
@@ -22,6 +23,7 @@ def run_validation(model: YOLO, data_cfg: Path, split: str) -> dict:
 
 
 def save_predictions(model: YOLO, image_dir: Path, output_dir: Path, imgsz: int) -> None:
+    """对文件夹中的图片做推理并保存可视化结果。"""
     output_dir.mkdir(parents=True, exist_ok=True)
     for image_path in image_dir.glob("*.jpg"):
         results = model.predict(source=str(image_path), imgsz=imgsz, conf=0.25, save=False, verbose=False)
@@ -31,6 +33,7 @@ def save_predictions(model: YOLO, image_dir: Path, output_dir: Path, imgsz: int)
 
 
 def save_gradcam(model: YOLO, image_path: Path, output_path: Path) -> None:
+    """生成单张图片的 Grad-CAM 热力图，观察模型关注区域。"""
     model.model.eval()
     # Pick the last C2f block if available; otherwise fall back to the penultimate module
     candidate_layers = [layer for layer in model.model.model if hasattr(layer, "cv3")]
@@ -53,6 +56,7 @@ def save_gradcam(model: YOLO, image_path: Path, output_path: Path) -> None:
 
 
 def benchmark_fps(model: YOLO, dummy_image: Path, warmup: int = 5, runs: int = 20) -> float:
+    """在单张图上做多次推理，估算推理 FPS。"""
     image = cv2.imread(str(dummy_image))
     if image is None:
         raise FileNotFoundError(f"Cannot read image {dummy_image}")

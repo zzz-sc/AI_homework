@@ -22,7 +22,7 @@ VISDRONE_CLASSES = {
 
 
 def read_annotation_file(label_path: Path) -> pd.DataFrame:
-    """Parse a single VisDrone label txt into a DataFrame."""
+    """解析单个 VisDrone 标注 txt，返回 DataFrame 便于统计分析。"""
     columns = [
         "bbox_left",
         "bbox_top",
@@ -42,6 +42,7 @@ def read_annotation_file(label_path: Path) -> pd.DataFrame:
             values = [float(x) for x in parts[: len(columns)]]
             records.append(values)
     df = pd.DataFrame(records, columns=columns)
+    # 衍生特征：面积与宽高比便于分析小目标比例和长宽分布
     df["area"] = df["bbox_width"] * df["bbox_height"]
     df["aspect_ratio"] = df["bbox_width"] / (df["bbox_height"] + 1e-6)
     df["category_name"] = df["category"].astype(int).map(VISDRONE_CLASSES)
@@ -49,6 +50,7 @@ def read_annotation_file(label_path: Path) -> pd.DataFrame:
 
 
 def collect_dataset_stats(label_dir: Path) -> pd.DataFrame:
+    """遍历标注目录，汇总为单个 DataFrame。"""
     label_files = sorted(label_dir.glob("*.txt"))
     dataframes = []
     for label_path in tqdm(label_files, desc="Loading annotations"):
@@ -61,6 +63,7 @@ def collect_dataset_stats(label_dir: Path) -> pd.DataFrame:
 
 
 def plot_distributions(df: pd.DataFrame, output_dir: Path) -> None:
+    """绘制宽/高/面积/类别分布以及宽高散点，输出 png 和统计 JSON。"""
     output_dir.mkdir(parents=True, exist_ok=True)
     sns.set_theme(style="whitegrid")
 

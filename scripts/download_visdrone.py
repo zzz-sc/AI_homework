@@ -16,7 +16,7 @@ FILE_LIST = [
 
 
 def download_file(url: str, dest: Path) -> None:
-    """Stream download with progress bar to avoid loading whole file in memory."""
+    """流式下载单个文件，带进度条，避免一次性加载入内存。"""
     dest.parent.mkdir(parents=True, exist_ok=True)
     with requests.get(url, stream=True, timeout=30) as r:
         r.raise_for_status()
@@ -29,13 +29,13 @@ def download_file(url: str, dest: Path) -> None:
 
 
 def extract_zip(zip_path: Path, target_dir: Path) -> None:
-    """Extract a zip archive into target_dir."""
+    """解压 zip 压缩包到指定目录。"""
     with zipfile.ZipFile(zip_path, "r") as zf:
         zf.extractall(target_dir)
 
 
 def move_split(extracted_dir: Path, target_root: Path, split_name: str) -> None:
-    """Move extracted split folder into unified dataset root."""
+    """将解压出的 split 目录移动到统一的数据集根目录下。"""
     src = extracted_dir / f"VisDrone2019-DET-{split_name}"
     if not src.exists():
         raise FileNotFoundError(f"Expected extracted dir {src} not found")
@@ -46,7 +46,7 @@ def move_split(extracted_dir: Path, target_root: Path, split_name: str) -> None:
 
 
 def update_yaml_path(cfg_path: Path, dataset_root: Path) -> None:
-    """Rewrite the YOLO dataset config path to the freshly downloaded root."""
+    """将 YOLO 数据配置文件中的 path 更新为下载后的数据集根目录。"""
     with cfg_path.open("r", encoding="utf-8") as f:
         cfg = yaml.safe_load(f)
     cfg["path"] = str(dataset_root.resolve())
